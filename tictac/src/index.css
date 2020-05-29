@@ -48,3 +48,8 @@ ol, ul {
 .game-info {
     margin-left: 20px;
 }
+
+.active-step {
+    font-weight: bold;
+    color: palevioletred;
+}

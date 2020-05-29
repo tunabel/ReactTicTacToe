@@ -14,8 +14,6 @@ function Square(props) {
 }
 
 class Board extends React.Component {
-
-
     renderSquare(i) {
         return (
             <Square
@@ -23,28 +21,53 @@ class Board extends React.Component {
                 onClick={() => this.props.onClick(i)}
             />
         );
+    };
+
+    renderRow(i) {
+        const newRow = [];
+        for ( let j = 0 ; j < 3 ; j++) {
+            newRow.push(this.renderSquare(i*3+j));
+        }
+        return newRow;
     }
 
     render() {
+        const newBoard = [];
+
+        for ( let i = 0 ; i < 3 ; i++) {
+            newBoard.push(
+                <div className="board-row" key={i}>
+                    {this.renderRow(i)}
+                </div>
+            )
+        }
+
         return (
             <div>
-                <div className="board-row">
-                    {this.renderSquare(0)}
-                    {this.renderSquare(1)}
-                    {this.renderSquare(2)}
-                </div>
-                <div className="board-row">
-                    {this.renderSquare(3)}
-                    {this.renderSquare(4)}
-                    {this.renderSquare(5)}
-                </div>
-                <div className="board-row">
-                    {this.renderSquare(6)}
-                    {this.renderSquare(7)}
-                    {this.renderSquare(8)}
-                </div>
+                {newBoard}
             </div>
-        );
+        )
+
+
+        // return (
+        //     <div>
+        //         <div className="board-row">
+        //             {this.renderSquare(0)}
+        //             {this.renderSquare(1)}
+        //             {this.renderSquare(2)}
+        //         </div>
+        //         <div className="board-row">
+        //             {this.renderSquare(3)}
+        //             {this.renderSquare(4)}
+        //             {this.renderSquare(5)}
+        //         </div>
+        //         <div className="board-row">
+        //             {this.renderSquare(6)}
+        //             {this.renderSquare(7)}
+        //             {this.renderSquare(8)}
+        //         </div>
+        //     </div>
+        // );
     }
 }
 
@@ -54,6 +77,7 @@ class Game extends React.Component {
         this.state = {
             history : [{
                 squares: Array(9).fill(null),
+                ticLoc: undefined,
             }],
             stepNumber: 0,
             xIsNext: true,
@@ -71,6 +95,7 @@ class Game extends React.Component {
         this.setState({
             history: history.concat([{
                 squares: squares,
+                ticLoc: i,
             }]),
             stepNumber: history.length,
             xIsNext: !this.state.xIsNext,
@@ -90,12 +115,16 @@ class Game extends React.Component {
         const winner = calculateWinner(current.squares);
 
         const moves = history.map((step,move) => {
+            let btnClass = '';
+            if (move === this.state.stepNumber) {
+                btnClass += ' active-step';
+            }
             const desc = move ?
-                'Go to move #' + move :
+                'Go to move #' + move + ' by ' + (move%2===0 ? 'O' : 'X') + ' at ' +findLocationOrder(step.ticLoc):
                 'Go to game start';
             return (
                 <li key={move}>
-                    <button onClick={() => this.jumpTo(move)}>{desc}</button>
+                    <button className={btnClass} onClick={() => this.jumpTo(move)}>{desc}</button>
                 </li>
             )
         })
@@ -105,6 +134,7 @@ class Game extends React.Component {
         } else {
             status = 'Next player: ' + (this.state.xIsNext? 'X' : 'O');
         }
+
         return (
             <div className="game">
                 <div className="game-board">
@@ -145,4 +175,11 @@ function calculateWinner(squares) {
         }
     }
     return null;
+}
+
+function findLocationOrder(ticLoc) {
+    const ticLocX = ticLoc % 3;
+    const ticLocY = (ticLoc-ticLocX)/3;
+
+    return 'col no.'+(ticLocX+1)+', row no.'+(ticLocY+1);
 }
