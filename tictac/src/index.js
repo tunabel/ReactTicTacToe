@@ -17,6 +17,7 @@ class Board extends React.Component {
     renderSquare(i) {
         return (
             <Square
+                key = {i}
                 value={this.props.squares[i]}
                 onClick={() => this.props.onClick(i)}
             />
@@ -81,6 +82,7 @@ class Game extends React.Component {
             }],
             stepNumber: 0,
             xIsNext: true,
+            moveOrderIsAsc: true
         }
     }
 
@@ -96,6 +98,7 @@ class Game extends React.Component {
             history: history.concat([{
                 squares: squares,
                 ticLoc: i,
+                move: current.move+1,
             }]),
             stepNumber: history.length,
             xIsNext: !this.state.xIsNext,
@@ -109,12 +112,20 @@ class Game extends React.Component {
         })
     }
 
+    renderMoves() {
+        this.setState(
+            {
+                moveOrderIsAsc: !this.state.moveOrderIsAsc,
+            }
+        )
+    }
+
     render() {
         const history = this.state.history;
         const current = history[this.state.stepNumber];
         const winner = calculateWinner(current.squares);
-
-        const moves = history.map((step,move) => {
+        const moves = [];
+        history.map((step,move) => {
             let btnClass = '';
             if (move === this.state.stepNumber) {
                 btnClass += ' active-step';
@@ -122,12 +133,27 @@ class Game extends React.Component {
             const desc = move ?
                 'Go to move #' + move + ' by ' + (move%2===0 ? 'O' : 'X') + ' at ' +findLocationOrder(step.ticLoc):
                 'Go to game start';
-            return (
-                <li key={move}>
-                    <button className={btnClass} onClick={() => this.jumpTo(move)}>{desc}</button>
-                </li>
-            )
+            // return (
+            //     <li key={move}>
+            //         <button className={btnClass} onClick={() => this.jumpTo(move)}>{desc}</button>
+            //     </li>
+            // )
+                if (this.state.moveOrderIsAsc) {
+                    moves.push(
+                        <li key={move}>
+                            <button className={btnClass} onClick={() => this.jumpTo(move)}>{desc}</button>
+                        </li>
+                    )
+                } else {
+                    moves.unshift(
+                        <li key={move}>
+                            <button className={btnClass} onClick={() => this.jumpTo(move)}>{desc}</button>
+                        </li>
+                    )
+                }
+               return null;
         })
+
         let status;
         if (winner) {
             status = 'Winner is: ' + winner;
@@ -144,6 +170,7 @@ class Game extends React.Component {
                     />
                 </div>
                 <div className="game-info">
+                    <button onClick={() => this.renderMoves()}>{this.state.moveOrderIsAsc?"Ascending":"Descending"}</button>
                     <div>{status}</div>
                     <ol>{moves}</ol>
                 </div>
@@ -181,5 +208,5 @@ function findLocationOrder(ticLoc) {
     const ticLocX = ticLoc % 3;
     const ticLocY = (ticLoc-ticLocX)/3;
 
-    return 'col no.'+(ticLocX+1)+', row no.'+(ticLocY+1);
+    return 'row no.'+(ticLocY+1)+', col no.'+(ticLocX+1);
 }
